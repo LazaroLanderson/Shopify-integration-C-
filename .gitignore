@@ -1,0 +1,11 @@
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+
+# NuGet packages
+*.nupkg
+packages/
+
+# OS files
+Thumbs.db
+.DS_Store
