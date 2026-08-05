@@ -1,5 +1,7 @@
 using System.Text;
 using System.Text.Json;
+using ShopifyIntegration.Models;
+using ShopifyIntegration.Queries;
 
 namespace ShopifyIntegration.Services;
 
@@ -25,5 +27,17 @@ public class ShopifyService
         var response = await httpClient.PostAsync(graphqlUrl, content);
 
         return await response.Content.ReadAsStringAsync();
+    }
+
+    public async Task<List<Product>> GetProducts()
+    {
+        var response = await SendGraphQlRequestAsync(ShopifyQueries.GetProducts());
+        var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(
+            response,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        return (shopifyResponse?.Data?.Products?.Nodes ?? [])
+            .OrderBy(product => product.Title ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 }

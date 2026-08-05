@@ -1,7 +1,4 @@
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using ShopifyIntegration.Models;
-using ShopifyIntegration.Queries;
 using ShopifyIntegration.Services;
 
 // Lê as credenciais armazenadas fora do projeto.
@@ -34,20 +31,20 @@ var graphqlUrl = $"{storeUrl.TrimEnd('/')}/admin/api/2026-07/graphql.json";
 
 using var httpClient = new HttpClient();
 var shopifyService = new ShopifyService(httpClient, graphqlUrl, accessToken);
-var response = await shopifyService.SendGraphQlRequestAsync(ShopifyQueries.GetShop);
+var products = await shopifyService.GetProducts();
 
-var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(
-    response,
-    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-var shop = shopifyResponse?.Data?.Shop;
-
-if (shop is null)
+if (products.Count == 0)
 {
-    Console.WriteLine("Could not read shop data.");
+    Console.WriteLine("No products were found.");
     return;
 }
 
-Console.WriteLine($"Shop Name: {shop.Name}");
-Console.WriteLine($"Shop Email: {shop.Email}");
-Console.WriteLine($"Shop Domain: {shop.MyshopifyDomain}");
+foreach (var product in products)
+{
+    Console.WriteLine($"Id: {product.Id}");
+    Console.WriteLine($"Title: {product.Title}");
+    Console.WriteLine($"Vendor: {product.Vendor}");
+    Console.WriteLine($"Type: {product.ProductType}");
+    Console.WriteLine($"Status: {product.Status}");
+    Console.WriteLine();
+}
