@@ -1,4 +1,4 @@
-﻿namespace ShopifyIntegration.Queries;
+namespace ShopifyIntegration.Queries;
 
 public static class ShopifyQueries
 {
@@ -26,7 +26,11 @@ public static class ShopifyQueries
         }
         """;
 
-    public static string GetOrders(string? searchFilter = null)
+    public static string GetOrders() => BuildOrdersQuery();
+    public static string GetPaidOrders() => BuildOrdersQuery("financial_status:paid");
+    public static string GetUnfulfilledOrders() => BuildOrdersQuery("fulfillment_status:unfulfilled");
+
+    private static string BuildOrdersQuery(string? searchFilter = null)
     {
         var filter = string.IsNullOrWhiteSpace(searchFilter)
             ? string.Empty
@@ -44,6 +48,7 @@ public static class ShopifyQueries
                   customer {
                     firstName
                     lastName
+                    email
                   }
                   totalPriceSet {
                     shopMoney {

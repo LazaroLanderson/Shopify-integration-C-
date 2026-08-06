@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using ShopifyIntegration.Models;
 using ShopifyIntegration.Queries;
@@ -22,29 +22,28 @@ public class ShopifyService
         var requestBody = JsonSerializer.Serialize(new { query });
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         var response = await httpClient.PostAsync(graphqlUrl, content);
-
         return await response.Content.ReadAsStringAsync();
     }
 
     public async Task<List<Product>> GetProducts()
     {
         var response = await SendGraphQlRequestAsync(ShopifyQueries.GetProducts());
-        var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(
-            response,
+        var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(response,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
         return (shopifyResponse?.Data?.Products?.Nodes ?? [])
             .OrderBy(product => product.Title ?? string.Empty, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
-    public async Task<List<Order>> GetOrders(string? searchFilter = null)
-    {
-        var response = await SendGraphQlRequestAsync(ShopifyQueries.GetOrders(searchFilter));
-        var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(
-            response,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    public Task<List<Order>> GetOrders() => GetOrdersFromQuery(ShopifyQueries.GetOrders());
+    public Task<List<Order>> GetPaidOrders() => GetOrdersFromQuery(ShopifyQueries.GetPaidOrders());
+    public Task<List<Order>> GetUnfulfilledOrders() => GetOrdersFromQuery(ShopifyQueries.GetUnfulfilledOrders());
 
+    private async Task<List<Order>> GetOrdersFromQuery(string query)
+    {
+        var response = await SendGraphQlRequestAsync(query);
+        var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(response,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         return shopifyResponse?.Data?.Orders?.Nodes ?? [];
     }
 }
