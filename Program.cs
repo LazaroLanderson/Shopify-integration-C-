@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using ShopifyIntegration.Services;
 
-// Lê as credenciais armazenadas fora do projeto.
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false)
     .AddUserSecrets<Program>()
@@ -31,20 +30,25 @@ var graphqlUrl = $"{storeUrl.TrimEnd('/')}/admin/api/2026-07/graphql.json";
 
 using var httpClient = new HttpClient();
 var shopifyService = new ShopifyService(httpClient, graphqlUrl, accessToken);
-var products = await shopifyService.GetProducts();
+var orders = await shopifyService.GetOrders();
 
-if (products.Count == 0)
+if (orders.Count == 0)
 {
-    Console.WriteLine("No products were found.");
+    Console.WriteLine("No orders were found.");
     return;
 }
 
-foreach (var product in products)
+foreach (var order in orders)
 {
-    Console.WriteLine($"Id: {product.Id}");
-    Console.WriteLine($"Title: {product.Title}");
-    Console.WriteLine($"Vendor: {product.Vendor}");
-    Console.WriteLine($"Type: {product.ProductType}");
-    Console.WriteLine($"Status: {product.Status}");
+    var customerName = $"{order.Customer?.FirstName} {order.Customer?.LastName}".Trim();
+    var total = order.TotalPriceSet?.ShopMoney;
+
+    Console.WriteLine($"Order: {order.Name}");
+    Console.WriteLine($"Id: {order.Id}");
+    Console.WriteLine($"Customer: {customerName}");
+    Console.WriteLine($"Created at: {order.CreatedAt:dd/MM/yyyy HH:mm}");
+    Console.WriteLine($"Financial status: {order.DisplayFinancialStatus}");
+    Console.WriteLine($"Fulfillment status: {order.DisplayFulfillmentStatus}");
+    Console.WriteLine($"Total: {total?.Amount} {total?.CurrencyCode}");
     Console.WriteLine();
 }

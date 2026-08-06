@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using ShopifyIntegration.Models;
 using ShopifyIntegration.Queries;
@@ -14,8 +14,6 @@ public class ShopifyService
     {
         this.httpClient = httpClient;
         this.graphqlUrl = graphqlUrl;
-
-        // Adiciona o token necessário para acessar a Shopify.
         this.httpClient.DefaultRequestHeaders.Add("X-Shopify-Access-Token", accessToken);
     }
 
@@ -23,7 +21,6 @@ public class ShopifyService
     {
         var requestBody = JsonSerializer.Serialize(new { query });
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-
         var response = await httpClient.PostAsync(graphqlUrl, content);
 
         return await response.Content.ReadAsStringAsync();
@@ -39,5 +36,15 @@ public class ShopifyService
         return (shopifyResponse?.Data?.Products?.Nodes ?? [])
             .OrderBy(product => product.Title ?? string.Empty, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    public async Task<List<Order>> GetOrders(string? searchFilter = null)
+    {
+        var response = await SendGraphQlRequestAsync(ShopifyQueries.GetOrders(searchFilter));
+        var shopifyResponse = JsonSerializer.Deserialize<ShopifyResponse>(
+            response,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        return shopifyResponse?.Data?.Orders?.Nodes ?? [];
     }
 }

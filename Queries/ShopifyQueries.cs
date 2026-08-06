@@ -1,4 +1,4 @@
-namespace ShopifyIntegration.Queries;
+﻿namespace ShopifyIntegration.Queries;
 
 public static class ShopifyQueries
 {
@@ -25,4 +25,35 @@ public static class ShopifyQueries
           }
         }
         """;
+
+    public static string GetOrders(string? searchFilter = null)
+    {
+        var filter = string.IsNullOrWhiteSpace(searchFilter)
+            ? string.Empty
+            : $", query: \"{searchFilter.Replace("\"", "\\\"")}\"";
+
+        return $$"""
+            query GetOrders {
+              orders(first: 20{{filter}}) {
+                nodes {
+                  id
+                  name
+                  createdAt
+                  displayFinancialStatus
+                  displayFulfillmentStatus
+                  customer {
+                    firstName
+                    lastName
+                  }
+                  totalPriceSet {
+                    shopMoney {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+            }
+            """;
+    }
 }
