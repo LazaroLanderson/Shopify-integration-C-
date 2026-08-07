@@ -62,7 +62,6 @@ Console.WriteLine("----------------");
 if (products.Count == 0)
 {
     Console.WriteLine("No products were found.");
-    return;
 }
 
 foreach (var product in products)
@@ -72,5 +71,54 @@ foreach (var product in products)
     Console.WriteLine($"Vendor: {product.Vendor}");
     Console.WriteLine($"Type: {product.ProductType}");
     Console.WriteLine($"Status: {product.Status}");
+
+    foreach (var variant in product.Variants.Nodes)
+    {
+        Console.WriteLine($"SKU: {variant.Sku}");
+    }
+
     Console.WriteLine();
 }
+
+var productsBySku = new Dictionary<string, Product>(StringComparer.OrdinalIgnoreCase);
+
+foreach (var product in products)
+{
+    foreach (var variant in product.Variants.Nodes)
+    {
+        if (!string.IsNullOrWhiteSpace(variant.Sku))
+        {
+            productsBySku.TryAdd(variant.Sku, product);
+        }
+    }
+}
+
+var generatedAt = DateTimeOffset.UtcNow;
+var reportRecords = new List<IntegrationReportRecord>();
+
+foreach (var inventoryRecord in inventoryRecords)
+{
+    productsBySku.TryGetValue(inventoryRecord.Sku, out var product);
+
+    reportRecords.Add(new IntegrationReportRecord
+    {
+        Sku = inventoryRecord.Sku,
+        Exists = product is not null,
+        Title = product?.Title,
+        Vendor = product?.Vendor,
+        Status = product?.Status,
+        GeneratedAt = generatedAt
+    });
+}
+
+var reportPath = Path.Combine(Directory.GetCurrentDirectory(), "IntegrationReport.csv");
+new ReportWriter().Write(reportPath, reportRecords);
+
+var foundProducts = reportRecords.Count(record => record.Exists);
+
+Console.WriteLine("Summary");
+Console.WriteLine("-------");
+Console.WriteLine($"Products in CSV: {inventoryRecords.Count}");
+Console.WriteLine($"Found in Shopify: {foundProducts}");
+Console.WriteLine($"Missing Products: {inventoryRecords.Count - foundProducts}");
+Console.WriteLine($"Report created: {reportPath}");

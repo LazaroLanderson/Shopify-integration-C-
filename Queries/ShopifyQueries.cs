@@ -21,6 +21,11 @@ public static class ShopifyQueries
               vendor
               productType
               status
+              variants(first: 100) {
+                nodes {
+                  sku
+                }
+              }
             }
           }
         }

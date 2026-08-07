@@ -31,6 +31,17 @@ public class Product
     public string? Vendor { get; set; }
     public string? ProductType { get; set; }
     public string? Status { get; set; }
+    public ProductVariantsResult Variants { get; set; } = new();
+}
+
+public class ProductVariantsResult
+{
+    public List<ProductVariant> Nodes { get; set; } = [];
+}
+
+public class ProductVariant
+{
+    public string? Sku { get; set; }
 }
 
 public class OrdersResult
