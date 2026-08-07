@@ -27,53 +27,50 @@ if (!Uri.TryCreate(storeUrl, UriKind.Absolute, out _))
     return;
 }
 
+var csvReader = new CsvReader();
+List<InventoryRecord> inventoryRecords;
+
+try
+{
+    inventoryRecords = csvReader.Read(Path.Combine(AppContext.BaseDirectory, "inventory.csv"));
+}
+catch (InvalidOperationException exception)
+{
+    Console.WriteLine($"CSV error: {exception.Message}");
+    return;
+}
+
+Console.WriteLine("Inventory records");
+Console.WriteLine("-----------------");
+
+foreach (var record in inventoryRecords)
+{
+    Console.WriteLine($"SKU: {record.Sku} | Quantity: {record.Quantity}");
+}
+
+Console.WriteLine();
+
 var graphqlUrl = $"{storeUrl.TrimEnd('/')}/admin/api/2026-07/graphql.json";
 
 using var httpClient = new HttpClient();
 var shopifyService = new ShopifyService(httpClient, graphqlUrl, accessToken);
-var orders = await shopifyService.GetOrders();
-var paidOrders = await shopifyService.GetPaidOrders();
-var unfulfilledOrders = await shopifyService.GetUnfulfilledOrders();
+var products = await shopifyService.GetProducts();
 
-Console.WriteLine($"Total orders: {orders.Count}");
-Console.WriteLine($"Paid orders: {paidOrders.Count}");
-Console.WriteLine($"Unfulfilled orders: {unfulfilledOrders.Count}");
-Console.WriteLine();
+Console.WriteLine("Shopify products");
+Console.WriteLine("----------------");
 
-if (orders.Count == 0)
+if (products.Count == 0)
 {
-    Console.WriteLine("No orders were found.");
+    Console.WriteLine("No products were found.");
     return;
 }
 
-DisplayOrders("Paid orders", paidOrders);
-DisplayOrders("Unfulfilled orders", unfulfilledOrders);
-
-static void DisplayOrders(string title, List<Order> orders)
+foreach (var product in products)
 {
-    Console.WriteLine(title);
-    Console.WriteLine(new string('-', title.Length));
-
-    if (orders.Count == 0)
-    {
-        Console.WriteLine("No orders found.");
-        Console.WriteLine();
-        return;
-    }
-
-    foreach (var order in orders)
-    {
-        var customerName = $"{order.Customer?.FirstName} {order.Customer?.LastName}".Trim();
-        var total = order.TotalPriceSet?.ShopMoney;
-
-        Console.WriteLine($"Order: {order.Name}");
-        Console.WriteLine($"Id: {order.Id}");
-        Console.WriteLine($"Customer: {customerName}");
-        Console.WriteLine($"Email: {order.Customer?.Email}");
-        Console.WriteLine($"Created at: {order.CreatedAt:dd/MM/yyyy HH:mm}");
-        Console.WriteLine($"Financial status: {order.DisplayFinancialStatus}");
-        Console.WriteLine($"Fulfillment status: {order.DisplayFulfillmentStatus}");
-        Console.WriteLine($"Total: {total?.Amount} {total?.CurrencyCode}");
-        Console.WriteLine();
-    }
+    Console.WriteLine($"Title: {product.Title}");
+    Console.WriteLine($"Id: {product.Id}");
+    Console.WriteLine($"Vendor: {product.Vendor}");
+    Console.WriteLine($"Type: {product.ProductType}");
+    Console.WriteLine($"Status: {product.Status}");
+    Console.WriteLine();
 }
