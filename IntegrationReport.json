@@ -1,0 +1,26 @@
+[
+  {
+    "Sku": "ABC001",
+    "Exists": false,
+    "Title": null,
+    "Vendor": null,
+    "Status": null,
+    "GeneratedAt": "2026-08-10T17:58:21.0328441+00:00"
+  },
+  {
+    "Sku": "ABC002",
+    "Exists": false,
+    "Title": null,
+    "Vendor": null,
+    "Status": null,
+    "GeneratedAt": "2026-08-10T17:58:21.0328441+00:00"
+  },
+  {
+    "Sku": "ABC003",
+    "Exists": false,
+    "Title": null,
+    "Vendor": null,
+    "Status": null,
+    "GeneratedAt": "2026-08-10T17:58:21.0328441+00:00"
+  }
+]

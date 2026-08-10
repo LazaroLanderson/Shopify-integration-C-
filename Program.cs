@@ -7,12 +7,22 @@ var configuration = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
     .Build();
 
+var logger = new ExecutionLogger(Path.Combine(Directory.GetCurrentDirectory(), "logs", "execution.log"));
+logger.Log("Application started.");
+
 var storeUrl = configuration["Shopify:StoreUrl"];
 var accessToken = configuration["Shopify:AccessToken"];
+var inventoryFilePath = configuration["Inventory:FilePath"];
 
 if (string.IsNullOrWhiteSpace(storeUrl) || string.IsNullOrWhiteSpace(accessToken))
 {
     Console.WriteLine("Please set Shopify credentials with dotnet user-secrets.");
+    return;
+}
+
+if (string.IsNullOrWhiteSpace(inventoryFilePath))
+{
+    Console.WriteLine("Inventory file path is missing in appsettings.json.");
     return;
 }
 
@@ -27,12 +37,17 @@ if (!Uri.TryCreate(storeUrl, UriKind.Absolute, out _))
     return;
 }
 
+if (!Path.IsPathRooted(inventoryFilePath))
+{
+    inventoryFilePath = Path.Combine(AppContext.BaseDirectory, inventoryFilePath);
+}
+
 var csvReader = new CsvReader();
 List<InventoryRecord> inventoryRecords;
 
 try
 {
-    inventoryRecords = csvReader.Read(Path.Combine(AppContext.BaseDirectory, "inventory.csv"));
+    inventoryRecords = csvReader.Read(inventoryFilePath);
 }
 catch (InvalidOperationException exception)
 {
@@ -111,8 +126,11 @@ foreach (var inventoryRecord in inventoryRecords)
     });
 }
 
+var reportWriter = new ReportWriter();
 var reportPath = Path.Combine(Directory.GetCurrentDirectory(), "IntegrationReport.csv");
-new ReportWriter().Write(reportPath, reportRecords);
+var jsonReportPath = Path.Combine(Directory.GetCurrentDirectory(), "IntegrationReport.json");
+reportWriter.Write(reportPath, reportRecords);
+reportWriter.WriteJson(jsonReportPath, reportRecords);
 
 var foundProducts = reportRecords.Count(record => record.Exists);
 
@@ -121,4 +139,5 @@ Console.WriteLine("-------");
 Console.WriteLine($"Products in CSV: {inventoryRecords.Count}");
 Console.WriteLine($"Found in Shopify: {foundProducts}");
 Console.WriteLine($"Missing Products: {inventoryRecords.Count - foundProducts}");
-Console.WriteLine($"Report created: {reportPath}");
+Console.WriteLine($"CSV report created: {reportPath}");
+Console.WriteLine($"JSON report created: {jsonReportPath}");

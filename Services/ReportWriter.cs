@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ShopifyIntegration.Models;
 
 namespace ShopifyIntegration.Services;
@@ -15,6 +16,12 @@ public class ReportWriter
         }
 
         File.WriteAllLines(filePath, lines);
+    }
+
+    public void WriteJson(string filePath, List<IntegrationReportRecord> records)
+    {
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        File.WriteAllText(filePath, JsonSerializer.Serialize(records, options));
     }
 
     private static string Escape(string? value)
