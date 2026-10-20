@@ -3,6 +3,7 @@ namespace ShopifyIntegration.Models;
 public class ShopifyResponse
 {
     public ShopifyData? Data { get; set; }
+    public List<ShopifyGraphQlError> Errors { get; set; } = [];
 }
 
 public class ShopifyData
@@ -10,6 +11,9 @@ public class ShopifyData
     public Shop? Shop { get; set; }
     public ProductsResult? Products { get; set; }
     public OrdersResult? Orders { get; set; }
+    public ProductVariantsResult? ProductVariants { get; set; }
+    public Product? Product { get; set; }
+    public ProductUpdatePayload? ProductUpdate { get; set; }
 }
 
 public class Shop
@@ -37,11 +41,36 @@ public class Product
 public class ProductVariantsResult
 {
     public List<ProductVariant> Nodes { get; set; } = [];
+    public PageInfo? PageInfo { get; set; }
 }
 
 public class ProductVariant
 {
     public string? Sku { get; set; }
+    public Product? Product { get; set; }
+}
+
+public class PageInfo
+{
+    public bool HasNextPage { get; set; }
+    public string? EndCursor { get; set; }
+}
+
+public class ProductUpdatePayload
+{
+    public Product? Product { get; set; }
+    public List<ShopifyUserError> UserErrors { get; set; } = [];
+}
+
+public class ShopifyGraphQlError
+{
+    public string Message { get; set; } = string.Empty;
+}
+
+public class ShopifyUserError
+{
+    public List<string>? Field { get; set; }
+    public string Message { get; set; } = string.Empty;
 }
 
 public class OrdersResult

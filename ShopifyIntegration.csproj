@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Tests/**/*.cs" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="inventory.csv" CopyToOutputDirectory="PreserveNewest" />

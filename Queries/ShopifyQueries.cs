@@ -31,6 +31,57 @@ public static class ShopifyQueries
         }
         """;
 
+    public static string GetProductBySku() => """
+        query GetProductBySku($search: String!, $after: String) {
+          productVariants(first: 100, query: $search, after: $after) {
+            nodes {
+              sku
+              product {
+                id
+                title
+                vendor
+                productType
+                status
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+        """;
+
+    public static string GetProductById() => """
+        query GetProductById($id: ID!) {
+          product(id: $id) {
+            id
+            title
+            vendor
+            productType
+            status
+          }
+        }
+        """;
+
+    public static string UpdateProduct() => """
+        mutation UpdateProduct($product: ProductUpdateInput!) {
+          productUpdate(product: $product) {
+            product {
+              id
+              title
+              vendor
+              productType
+              status
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """;
+
     public static string GetOrders() => BuildOrdersQuery();
     public static string GetPaidOrders() => BuildOrdersQuery("financial_status:paid");
     public static string GetUnfulfilledOrders() => BuildOrdersQuery("fulfillment_status:unfulfilled");
